@@ -14,7 +14,7 @@ import os
 
 sys.path.insert(0, os.path.dirname(__file__))
 
-from utils.api_client import health_check, get_market_summary, get_all_stocks
+from utils.api_client import health_check, get_market_summary, get_all_stocks, BACKEND_URL
 
 st.set_page_config(
     page_title="FinPulse",
@@ -36,7 +36,7 @@ st.markdown(
 health = health_check()
 if health is None:
     st.error(
-        "⚠️ Cannot reach the FinPulse API backend.  \n"
+        f"Cannot reach the FinPulse API backend at `{BACKEND_URL}`.  \n"
         "Make sure the backend is running:  \n"
         "```bash\ncd backend && uvicorn main:app --reload --port 8000\n```"
     )
