@@ -4,6 +4,7 @@ Keeps the dashboard decoupled from HTTP details.
 """
 
 import os
+import time
 import httpx
 import streamlit as st
 
@@ -17,28 +18,33 @@ BACKEND_URL = (
 
 def _get(path: str, params: dict | None = None) -> dict | list | None:
     """GET request to backend. Returns parsed JSON or None on error."""
-    try:
-        with httpx.Client(timeout=15) as client:
-            resp = client.get(f"{BACKEND_URL}{path}", params=params)
-            resp.raise_for_status()
-            return resp.json()
-    except httpx.HTTPStatusError as e:
-        if e.response.status_code == 404:
-            return None
-        raise
-    except httpx.ConnectError:
-        return None
+    for attempt in range(3):
+        try:
+            with httpx.Client(timeout=120) as client:
+                resp = client.get(f"{BACKEND_URL}{path}", params=params)
+                resp.raise_for_status()
+                return resp.json()
+        except httpx.HTTPStatusError as e:
+            if e.response.status_code == 404:
+                return None
+            raise
+        except httpx.TransportError:
+            # Free-tier hosts sleep on idle and take ~1 min to wake up
+            time.sleep(15)
+    return None
 
 
 def _post(path: str, json: dict | None = None) -> dict | None:
     """POST request to backend. Returns parsed JSON or None on error."""
-    try:
-        with httpx.Client(timeout=30) as client:
-            resp = client.post(f"{BACKEND_URL}{path}", json=json)
-            resp.raise_for_status()
-            return resp.json()
-    except Exception:
-        return None
+    for attempt in range(3):
+        try:
+            with httpx.Client(timeout=120) as client:
+                resp = client.post(f"{BACKEND_URL}{path}", json=json)
+                resp.raise_for_status()
+                return resp.json()
+        except Exception:
+            time.sleep(15)
+    return None
 
 
 # ── Public helpers ──────────────────────────────────────────────────────────
