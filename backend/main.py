@@ -44,7 +44,7 @@ async def lifespan(app: FastAPI):
 
     # Auto-seed companies if the table is empty
     from database import SessionLocal
-    from models import Company
+    from models import Company, Fundamental
     from seed import TRACKED_COMPANIES
     session = SessionLocal()
     try:
@@ -56,8 +56,29 @@ async def lifespan(app: FastAPI):
             logger.info("Auto-seed complete.")
         else:
             logger.info("Companies table has %d entries — skipping auto-seed.", existing)
+
+        # Fresh DB (e.g. first deploy): backfill 1 year of market data in the background
+        needs_backfill = session.query(Fundamental).count() == 0
     finally:
         session.close()
+
+    if needs_backfill:
+        import threading
+
+        def _backfill():
+            """Fetch ~1yr of history + fundamentals for all companies."""
+            s = SessionLocal()
+            try:
+                from services.data_fetcher import refresh_all
+                logger.info("First run detected — backfilling market data in background …")
+                summary = refresh_all(s, days=365)
+                logger.info("Backfill complete: %s", summary)
+            except Exception as exc:
+                logger.error("Backfill failed: %s", exc)
+            finally:
+                s.close()
+
+        threading.Thread(target=_backfill, daemon=True).start()
 
     # Start background scheduler
     from services.scheduler import start_scheduler, stop_scheduler
