@@ -5,9 +5,14 @@ Keeps the dashboard decoupled from HTTP details.
 
 import os
 import httpx
+import streamlit as st
 
-# Backend URL — set via env var, defaults to local dev
-BACKEND_URL = os.getenv("BACKEND_URL", "http://localhost:8000")
+# Backend URL — Streamlit Cloud secrets take priority, then env var, then local default
+BACKEND_URL = (
+    st.secrets.get("BACKEND_URL")
+    or os.getenv("BACKEND_URL")
+    or "http://localhost:8000"
+)
 
 
 def _get(path: str, params: dict | None = None) -> dict | list | None:
