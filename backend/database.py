@@ -6,8 +6,12 @@ Swap the DATABASE_URL env var to switch — SQLAlchemy handles the rest.
 """
 
 import os
+from dotenv import load_dotenv
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, declarative_base
+
+# Load .env if present (local dev); env vars set on the host always win
+load_dotenv()
 
 # Read DATABASE_URL from environment, default to local SQLite
 DATABASE_URL = os.getenv(
