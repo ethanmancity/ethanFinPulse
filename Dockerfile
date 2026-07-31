@@ -16,5 +16,5 @@ USER user
 ENV HOME=/home/user \
     PATH=/home/user/.local/bin:$PATH
 
-# Hugging Face Spaces exposes the app on port 7860
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "7860"]
+# Listen on the platform-provided PORT (Render), defaulting to 7860 (Hugging Face Spaces)
+CMD ["sh", "-c", "uvicorn main:app --host 0.0.0.0 --port ${PORT:-7860}"]
