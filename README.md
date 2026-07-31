@@ -4,6 +4,17 @@
 
 ---
 
+## Live Deployment
+
+| Layer | URL |
+|-------|-----|
+| Dashboard (Frontend) | https://ethanfinpulse.streamlit.app |
+| Backend API | https://finpulse-api-7ygu.onrender.com |
+| API Docs (Swagger) | https://finpulse-api-7ygu.onrender.com/docs |
+
+> **Note:** Both hosts run on free tiers and sleep after ~15 min of inactivity.
+> The first load after idle takes ~1–2 min while they wake up, then everything is fast.
+
 ## Quick Start
 
 ### Prerequisites
@@ -13,8 +24,8 @@
 ### 1. Clone & setup
 
 ```bash
-git clone https://github.com/yourusername/finpulse.git
-cd finpulse
+git clone https://github.com/ethanmancity/ethanFinPulse.git
+cd ethanFinPulse
 
 # Backend
 cd backend
@@ -136,7 +147,6 @@ Interactive docs at http://localhost:8000/docs
 | `DATABASE_URL` | `sqlite:///./finpulse.db` | DB connection string |
 | `REFRESH_INTERVAL_MIN` | `30` | Scheduler refresh interval (minutes) |
 | `BACKEND_URL` | `http://localhost:8000` | Backend URL for dashboard |
-| `GEMINI_API_KEY` | (empty) | Google Gemini API key for AI insights |
 
 ---
 
@@ -209,39 +219,38 @@ finpulse/
 
 ## Deployment
 
-### Backend → Render
+The live app runs on three free-tier services. The backend auto-creates its tables and backfills
+1 year of market data on first boot, so a fresh deployment is fully self-service.
+
+### Backend → Render (Docker)
 
 1. Push repo to GitHub
-2. Go to [render.com](https://render.com) → New Web Service
-3. Connect GitHub repo
-4. Settings:
-   - **Root Directory:** `finpulse/backend`
-   - **Build Command:** `pip install -r requirements.txt`
-   - **Start Command:** `uvicorn main:app --host 0.0.0.0 --port $PORT`
-5. Add env vars:
-   - `DATABASE_URL` = your Supabase Postgres URL
+2. [render.com](https://render.com) → New → Web Service → connect the GitHub repo
+3. Settings:
+   - **Language:** Docker (auto-detected from the root `Dockerfile`)
+   - **Root Directory:** *(leave empty — the Dockerfile is at the repo root)*
+   - **Start Command:** handled by the Dockerfile (`uvicorn main:app --host 0.0.0.0 --port ${PORT:-7860}`)
+4. Add env vars:
+   - `DATABASE_URL` = your Supabase Postgres pooler URL
    - `REFRESH_INTERVAL_MIN` = `30`
 
 ### Database → Supabase
 
-1. Go to [supabase.com](https://supabase.com) → New Project
-2. Copy the Postgres connection string
-3. Set `DATABASE_URL` in Render env vars
-4. Tables are auto-created by SQLAlchemy on first startup
+1. [supabase.com](https://supabase.com) → New Project → copy the **Session pooler** connection string
+2. Set it as `DATABASE_URL` in Render's env vars
+3. Tables are auto-created by SQLAlchemy on first startup; the backend backfills 1 year of data automatically
 
 ### Dashboard → Streamlit Community Cloud
 
 1. Push repo to GitHub
-2. Go to [share.streamlit.io](https://share.streamlit.io)
-3. Deploy from GitHub — select `finpulse/dashboard/app.py`
-4. Add env var: `BACKEND_URL` = your Render backend URL
+2. [share.streamlit.io](https://share.streamlit.io) → Deploy from GitHub → main file `dashboard/app.py`
+3. Add a **secret**: `BACKEND_URL` = your Render backend URL (e.g. `https://finpulse-api-7ygu.onrender.com`)
 
 ---
 
 ## External APIs & Tools Used
 
 - **yFinance** — Primary data source for NSE market data (via `.NS` tickers)
-- **Google Gemini API** — Used for AI-powered stock insights (bonus feature)
 - **FastAPI** — REST API framework with auto-generated OpenAPI docs
 - **SQLAlchemy** — ORM for database abstraction
 - **Plotly** — Interactive charts (candlestick, bar, line, treemap, pie)

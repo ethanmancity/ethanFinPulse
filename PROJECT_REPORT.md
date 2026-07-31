@@ -26,9 +26,6 @@ Presentation (Streamlit) → API Layer (FastAPI) → Data Layer (SQLAlchemy + DB
 ### Primary Data Source
 - **yFinance** (`yfinance` Python library) — fetches live quotes, historical OHLCV, and fundamental metrics for NSE-listed stocks using the `.NS` suffix (e.g., `RELIANCE.NS`). This is the sole data source; NSE/BSE direct scraping was intentionally avoided due to ToS and rate-limiting concerns.
 
-### AI Integration
-- **Google Gemini API** — available for generating plain-English summaries of stock performance (configured via `GEMINI_API_KEY` env var).
-
 ### Internal APIs (FastAPI)
 The application exposes its own REST API with 7 endpoints covering stock listing, detail, history, comparison, market summary, refresh, and health check. Interactive documentation is auto-generated at `/docs`.
 
@@ -82,7 +79,7 @@ Unique constraint on `(ticker, snapshot_date)`.
 
 ### Required Features
 1. **24 NSE-listed companies** across 10+ sectors (Banking, IT, FMCG, Auto, Pharma, Energy, Telecom, NBFC, Consumer, Infrastructure, Materials, Metals, Power)
-2. **Live + historical OHLCV data** via yFinance with up to 5 years of history
+2. **Live + historical OHLCV data** via yFinance — 1 year of daily history (range-selectable in the API)
 3. **Fundamental metrics** — Market Cap, P/E, EPS, Dividend Yield, 52W High/Low, Book Value, ROE, Debt/Equity, Beta
 4. **SQLite database** with proper schema, unique constraints, and indexes
 5. **REST API** with 7 endpoints, Pydantic schemas, proper HTTP status codes, CORS, OpenAPI docs
@@ -158,10 +155,20 @@ Open http://localhost:8501 for the dashboard and http://localhost:8000/docs for 
 
 ## 8. Submission Checklist
 
+### Live Deployment
+- **Dashboard (Frontend):** https://ethanfinpulse.streamlit.app
+- **Backend API:** https://finpulse-api-7ygu.onrender.com
+- **API Docs:** https://finpulse-api-7ygu.onrender.com/docs
+- **Repository:** https://github.com/ethanmancity/ethanFinPulse
+
+> Free-tier hosts sleep after ~15 min idle — the first load after idle takes ~1–2 min to wake up.
+
+### Requirements
+
 | Requirement | Status |
 |-------------|--------|
 | 20+ NSE companies tracked | ✅ 24 companies across 10+ sectors |
-| Live + historical OHLCV | ✅ yFinance with up to 5yr history |
+| Live + historical OHLCV | ✅ yFinance with 1yr history |
 | Market Cap, P/E, EPS | ✅ Plus 10+ additional metrics |
 | SQLite database | ✅ With Postgres-ready architecture |
 | REST API endpoints | ✅ 7 endpoints (stocks, history, compare, summary, refresh, health) |
@@ -181,7 +188,7 @@ Open http://localhost:8501 for the dashboard and http://localhost:8000/docs for 
 | requirements.txt | ✅ Both backend and dashboard |
 | .gitignore | ✅ Excludes .env, __pycache__, .db, venv |
 | .env.example | ✅ Template with all variables |
-| External APIs documented | ✅ yFinance, Gemini, all libraries listed |
+| External APIs documented | ✅ yFinance, all libraries listed |
 
 ---
 
