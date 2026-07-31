@@ -1,0 +1,12 @@
+.git
+.gitignore
+*.md
+.env
+.env.example
+dashboard
+**/venv
+**/__pycache__
+*.pyc
+*.db
+*.sqlite
+*.log
